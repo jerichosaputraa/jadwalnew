@@ -212,11 +212,40 @@
             draw();
         }
 
-        async function draw() {
+        // Fungsi rander utama yang bisa digunakan kembali
+        function renderToTargetContext(targetCtx, targetCanvas) {
             const text = textInput.value || " ";
             const fSize = parseFloat(fontSize.value);
             const sWidth = parseFloat(strokeWidth.value);
-            
+            const x = targetCanvas.width / 2;
+            const y = targetCanvas.height / 2;
+
+            targetCtx.font = `900 ${fSize}px "${fontFamily.value}", sans-serif`;
+            targetCtx.textBaseline = 'middle';
+            targetCtx.textAlign = 'center';
+            targetCtx.lineJoin = 'round';
+            targetCtx.lineCap = 'round';
+
+            if (outlineEnable.checked) {
+                targetCtx.strokeStyle = outlineColor.value;
+                targetCtx.lineWidth = sWidth * 2.5;
+                targetCtx.strokeText(text, x, y);
+            }
+
+            const textMetrics = targetCtx.measureText(text);
+            let currentX = x - (textMetrics.width / 2);
+            for (let i = 0; i < text.length; i++) {
+                const char = text[i];
+                const charWidth = targetCtx.measureText(char).width;
+                targetCtx.fillStyle = singleColorMode.checked ? currentSelectedColors[0] : currentSelectedColors[i % currentSelectedColors.length];
+                targetCtx.fillText(char, currentX + (charWidth / 2), y);
+                currentX += charWidth;
+            }
+        }
+
+        async function draw() {
+            const text = textInput.value || " ";
+            const fSize = parseFloat(fontSize.value);
             valFontSize.value = fontSize.value;
             valStrokeWidth.value = strokeWidth.value;
 
@@ -227,65 +256,43 @@
             canvas.width = textMetrics.width + padding;
             canvas.height = fSize * 2.2;
 
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.textBaseline = 'middle';
-            ctx.textAlign = 'center';
-            ctx.lineJoin = 'round';
-            ctx.lineCap = 'round';
-
-            const x = canvas.width / 2;
-            const y = canvas.height / 2;
-
-            if (outlineEnable.checked) {
-                ctx.font = `900 ${fSize}px "${fontFamily.value}", sans-serif`;
-                ctx.strokeStyle = outlineColor.value;
-                ctx.lineWidth = sWidth * 2.5;
-                ctx.strokeText(text, x, y);
-            }
-
-            let currentX = x - (textMetrics.width / 2);
-            for (let i = 0; i < text.length; i++) {
-                const char = text[i];
-                const charWidth = ctx.measureText(char).width;
-                ctx.fillStyle = singleColorMode.checked ? currentSelectedColors[0] : currentSelectedColors[i % currentSelectedColors.length];
-                ctx.fillText(char, currentX + (charWidth / 2), y);
-                currentX += charWidth;
-            }
+            renderToTargetContext(ctx, canvas);
         }
 
-        // --- FUNGSI VEKTORISASI ---
+        // --- FUNGSI VEKTORISASI PERBAIKAN ---
         function generatePureSVG() {
             const text = textInput.value || " ";
             const fSize = parseFloat(fontSize.value);
             const sWidth = parseFloat(strokeWidth.value);
             const fFamily = fontFamily.value;
 
-            // Hitung dimensi yang sama dengan canvas
             const textMetrics = ctx.measureText(text);
             const width = textMetrics.width + (fSize * 0.7);
             const height = fSize * 2.2;
             const xCenter = width / 2;
             const yCenter = height / 2;
 
+            // Gunakan &amp; agar URL valid dalam XML/SVG
+            const fontUrl = "https://fonts.googleapis.com/css2?family=Fredoka:wght@700&amp;family=Luckiest+Guy&amp;family=Lilita+One&amp;family=Sour+Gummy:wght@900&amp;family=Bungee&amp;family=Quicksand:wght@700&amp;display=swap";
+
             let svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">`;
-            svgContent += `<style>@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@700&family=Luckiest+Guy&family=Lilita+One&family=Sour+Gummy:wght@900&family=Bungee&family=Quicksand:wght@700&display=swap');</style>`;
+            svgContent += `<style>@import url('${fontUrl}'); text { font-family: '${fFamily}', sans-serif; font-weight: 900; }</style>`;
             
-            // Render Outline Vektor
             if (outlineEnable.checked) {
                 svgContent += `<text x="${xCenter}" y="${yCenter}" text-anchor="middle" dominant-baseline="middle" 
-                    font-family='${fFamily}, sans-serif' font-size="${fSize}" font-weight="900" 
-                    fill="none" stroke="${outlineColor.value}" stroke-width="${sWidth * 2.5}" stroke-linejoin="round" stroke-linecap="round">${text}</text>`;
+                    font-size="${fSize}" fill="none" stroke="${outlineColor.value}" 
+                    stroke-width="${sWidth * 2.5}" stroke-linejoin="round" stroke-linecap="round">${text}</text>`;
             }
 
-            // Render Multi-color Vektor per Karakter
             let currentX = xCenter - (textMetrics.width / 2);
             for (let i = 0; i < text.length; i++) {
                 const char = text[i];
                 const charWidth = ctx.measureText(char).width;
                 const color = singleColorMode.checked ? currentSelectedColors[0] : currentSelectedColors[i % currentSelectedColors.length];
-                
-                svgContent += `<text x="${currentX + (charWidth / 2)}" y="${yCenter}" text-anchor="middle" dominant-baseline="middle" 
-                    font-family='${fFamily}, sans-serif' font-size="${fSize}" font-weight="900" fill="${color}">${char}</text>`;
+                const safeChar = char.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+                svgContent += `<text x="${currentX + (charWidth / 2)}" y="${yCenter}" text-anchor="middle" 
+                    dominant-baseline="middle" font-size="${fSize}" fill="${color}">${safeChar}</text>`;
                 currentX += charWidth;
             }
 
@@ -306,7 +313,6 @@
             });
             colorProfile.addEventListener('change', (e) => loadPalette(e.target.value));
             
-            // Download PNG
             document.getElementById('downloadBtn').addEventListener('click', () => {
                 const link = document.createElement('a');
                 link.download = `sticker-${textInput.value}-${Date.now()}.png`;
@@ -314,7 +320,6 @@
                 link.click();
             });
 
-            // Download SVG VEKTOR MURNI
             document.getElementById('downloadSvgBtn').addEventListener('click', () => {
                 const svgData = generatePureSVG();
                 const blob = new Blob([svgData], {type: 'image/svg+xml'});
@@ -325,25 +330,24 @@
                 link.click();
             });
 
-            // Download PDF VEKTOR MURNI
             document.getElementById('downloadPdfBtn').addEventListener('click', () => {
                 const { jsPDF } = window.jspdf;
-                const svgElement = generatePureSVG();
-                
-                // PDF Vektor dibuat dengan membungkus SVG asli ke dalam PDF
                 const pdf = new jsPDF({
                     orientation: canvas.width > canvas.height ? 'l' : 'p',
                     unit: 'px',
                     format: [canvas.width, canvas.height]
                 });
 
-                // Menambahkan SVG sebagai elemen vektor (menggunakan addSvg jika tersedia atau via string)
-                // Karena jsPDF standar terbatas pada teks, cara terbaik menjaga vektor murni adalah menyematkan SVG
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(svgElement, "image/svg+xml");
+                const scale = 4; // High DPI render untuk hasil tajam
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = canvas.width * scale;
+                tempCanvas.height = canvas.height * scale;
+                const tCtx = tempCanvas.getContext('2d');
+                tCtx.scale(scale, scale);
                 
-                // Simpan sebagai PDF (Metode addImage digunakan di sini namun tetap menjaga skalabilitas tinggi karena sumbernya SVG)
-                pdf.addSvgAsImage(svgElement, 0, 0, canvas.width, canvas.height);
+                renderToTargetContext(tCtx, canvas); 
+
+                pdf.addImage(tempCanvas.toDataURL('image/png'), 'PNG', 0, 0, canvas.width, canvas.height);
                 pdf.save(`sticker-${textInput.value}-${Date.now()}.pdf`);
             });
         }

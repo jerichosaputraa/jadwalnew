@@ -19,7 +19,7 @@
             background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
             border-radius: 24px;
         }
-        .custom-file-upload { cursor: pointer; transition: all 0.2s; border: 2px dashed #d1d5db; }
+        .custom-file-upload { cursor: pointer; transition: all 0.2s; border: 2px dashed #d1d5db; border-radius: 12px; }
         .custom-file-upload:hover { border-color: #3b82f6; background: #eff6ff; }
         .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
         .switch input { opacity: 0; width: 0; height: 0; }
@@ -37,7 +37,7 @@
             <h2 class="text-3xl md:text-4xl font-black text-gray-800 flex items-center justify-center gap-2">
                 <i data-lucide="sticker" class="text-yellow-500 w-8 h-8"></i> Sticker Text Pro
             </h2>
-            <p class="text-gray-500 mt-1 text-[10px] md:text-xs font-bold uppercase tracking-[0.2em]">High Resolution PNG Export</p>
+            <p class="text-gray-500 mt-1 text-[10px] md:text-xs font-bold uppercase tracking-[0.2em]">Custom Font & Multi-Color Ready</p>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -47,15 +47,22 @@
                     <input class="w-full px-4 py-3 border-2 border-gray-100 rounded-xl focus:border-blue-500 outline-none text-base font-bold" id="textInput" type="text" value="Jericho"/>
                 </div>
 
-                <div>
-                    <label class="block text-[10px] font-black text-gray-400 mb-1 uppercase tracking-wider">Pilih Font</label>
-                    <select class="w-full p-2.5 border-2 border-gray-100 rounded-xl text-sm font-bold" id="fontFamily">
-                        <option selected value="Lilita One">Lilita One</option>
-                        <option value="Sour Gummy">Sour Gummy</option>
-                        <option value="Luckiest Guy">Luckiest Guy</option>
-                        <option value="Fredoka">Fredoka</option>
-                        <option value="Bungee">Bungee</option>
-                    </select>
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-[10px] font-black text-gray-400 mb-1 uppercase tracking-wider">Pilih Font</label>
+                        <select class="w-full p-2.5 border-2 border-gray-100 rounded-xl text-sm font-bold" id="fontFamily">
+                            <option selected value="Lilita One">Lilita One</option>
+                            <option value="Sour Gummy">Sour Gummy</option>
+                            <option value="Luckiest Guy">Luckiest Guy</option>
+                            <option value="Fredoka">Fredoka</option>
+                            <option value="Bungee">Bungee</option>
+                        </select>
+                    </div>
+                    <label class="custom-file-upload flex flex-col items-center justify-center p-3 gap-1">
+                        <input type="file" id="fontUpload" accept=".ttf,.otf" class="hidden">
+                        <i data-lucide="file-up" class="text-blue-500 w-5 h-5"></i>
+                        <span id="fontUploadLabel" class="text-[9px] font-black text-gray-500 uppercase">Upload Font Kustom</span>
+                    </label>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4 bg-gray-50 p-3 rounded-xl border border-gray-100">
@@ -86,8 +93,8 @@
                 <div>
                     <label class="block text-[10px] font-black text-gray-400 mb-2 uppercase tracking-wider">Profil Warna</label>
                     <select class="w-full p-2.5 border-2 border-gray-100 rounded-xl text-xs font-bold mb-3" id="colorProfile">
+                        <option value="playful">Playful Bright</option>
                         <option value="vintage">Vintage Soft</option>
-                        <option selected value="playful">Playful Bright</option>
                         <option value="pastel">Sweet Pastel</option>
                         <option value="neon">Electric Neon</option>
                         <option value="earth">Earth Tones</option>
@@ -125,6 +132,8 @@
         const ctx = canvas.getContext('2d');
         const textInput = document.getElementById('textInput');
         const fontFamily = document.getElementById('fontFamily');
+        const fontUpload = document.getElementById('fontUpload');
+        const fontUploadLabel = document.getElementById('fontUploadLabel');
         const fontSize = document.getElementById('fontSize');
         const valFontSize = document.getElementById('valFontSize');
         const strokeWidth = document.getElementById('strokeWidth');
@@ -135,10 +144,9 @@
         const colorPaletteContainer = document.getElementById('colorPalette');
         const singleColorMode = document.getElementById('singleColorMode');
 
-        // Palet warna lengkap
         const profiles = {
-            vintage: ['#84a5ba', '#d87459', '#e9c465', '#f8c5af', '#a7c1ae'],
             playful: ['#FF595E', '#FFCA3A', '#8AC926', '#1982C4', '#6A4C93'],
+            vintage: ['#84a5ba', '#d87459', '#e9c465', '#f8c5af', '#a7c1ae'],
             pastel: ['#FFB7B2', '#FFDAC1', '#E2F0CB', '#B5EAD7', '#C7CEEA'],
             neon: ['#39FF14', '#FF00FF', '#00FFFF', '#FFFF00', '#FF3131'],
             earth: ['#6B705C', '#A5A58D', '#B7B7A4', '#FFE8D6', '#DDBEA9'],
@@ -153,6 +161,29 @@
             setupEventListeners();
             document.fonts.ready.then(draw);
         }
+
+        // FUNGSI UPLOAD FONT
+        fontUpload.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const fontName = 'CustomFont_' + Date.now();
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const newFont = new FontFace(fontName, event.target.result);
+                    newFont.load().then(function(loadedFont) {
+                        document.fonts.add(loadedFont);
+                        const option = document.createElement('option');
+                        option.value = fontName;
+                        option.text = "Kustom: " + file.name;
+                        option.selected = true;
+                        fontFamily.add(option);
+                        fontUploadLabel.innerText = "Berhasil: " + file.name;
+                        draw();
+                    }).catch(err => alert("Gagal memuat font: " + err));
+                };
+                reader.readAsArrayBuffer(file);
+            }
+        });
 
         function loadPalette(key) {
             colorPaletteContainer.innerHTML = '';
@@ -187,10 +218,9 @@
             ctx.font = `900 ${fSize}px "${fontFamily.value}", sans-serif`;
             const textMetrics = ctx.measureText(text);
             
-            // Padding untuk outline agar tidak terpotong
-            const padding = fSize * 0.5;
+            const padding = fSize * 0.6;
             canvas.width = textMetrics.width + padding;
-            canvas.height = fSize * 1.8;
+            canvas.height = fSize * 2;
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.textBaseline = 'middle';
@@ -201,7 +231,6 @@
             const x = canvas.width / 2;
             const y = canvas.height / 2;
 
-            // Render Outline
             if (outlineEnable.checked) {
                 ctx.font = `900 ${fSize}px "${fontFamily.value}", sans-serif`;
                 ctx.strokeStyle = outlineColor.value;
@@ -209,12 +238,10 @@
                 ctx.strokeText(text, x, y);
             }
 
-            // Render Multi-color Text
             let currentX = x - (textMetrics.width / 2);
             for (let i = 0; i < text.length; i++) {
                 const char = text[i];
                 const charWidth = ctx.measureText(char).width;
-                
                 ctx.fillStyle = singleColorMode.checked ? currentSelectedColors[0] : currentSelectedColors[i % currentSelectedColors.length];
                 ctx.fillText(char, currentX + (charWidth / 2), y);
                 currentX += charWidth;
@@ -225,9 +252,7 @@
             [textInput, fontFamily, fontSize, strokeWidth, outlineEnable, outlineColor, singleColorMode].forEach(el => {
                 el.addEventListener('input', draw);
             });
-            
             colorProfile.addEventListener('change', (e) => loadPalette(e.target.value));
-
             document.getElementById('downloadBtn').addEventListener('click', () => {
                 const link = document.createElement('a');
                 link.download = `sticker-${textInput.value}-${Date.now()}.png`;

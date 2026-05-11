@@ -1,0 +1,790 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html>
+<html b:css='false' b:defaultwidgetversion='2' b:layoutsversion='3' xmlns='http://www.w3.org/1999/xhtml' xmlns:b='http://www.google.com/2005/gml/b' xmlns:data='http://www.google.com/2005/gml/data' xmlns:expr='http://www.google.com/2005/gml/expr'>
+<head>
+    <meta content='width=device-width, initial-scale=1' name='viewport'/>
+    <title>Sticker Text Generator - Pro</title>
+    
+    <b:skin><![CDATA[
+        /* Override Blogger Styles & Custom UI */
+        #sticker-app-container {
+            font-family: 'Inter', sans-serif !important;
+            line-height: 1.2 !important;
+            color: #1f2937 !important;
+            max-width: 1280px !important;
+            margin: 0 auto !important;
+            background: #f3f4f6 !important;
+            padding: 20px !important;
+        }
+        #sticker-app-container * {
+            box-sizing: border-box !important;
+        }
+        .canvas-area {
+            background-image: 
+                linear-gradient(45deg, #e5e7eb 25%, transparent 25%), 
+                linear-gradient(-45deg, #e5e7eb 25%, transparent 25%), 
+                linear-gradient(45deg, transparent 75%, #e5e7eb 75%), 
+                linear-gradient(-45deg, transparent 75%, #e5e7eb 75%) !important;
+            background-size: 20px 20px !important;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px !important;
+            border-radius: 24px !important;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.05) !important;
+        }
+        .custom-file-upload {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 12px !important;
+            cursor: pointer !important;
+            background: #f9fafb !important;
+            border: 2px dashed #d1d5db !important;
+            border-radius: 12px !important;
+            transition: all 0.2s !important;
+            min-height: 60px !important;
+        }
+        .custom-file-upload:hover {
+            border-color: #3b82f6 !important;
+            background: #eff6ff !important;
+        }
+        .color-checkbox:checked + label {
+            border-color: #3b82f6 !important;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5) !important;
+            transform: scale(1.05) !important;
+        }
+        .switch {
+            position: relative !important;
+            display: inline-block !important;
+            width: 40px !important;
+            height: 20px !important;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute !important;
+            cursor: pointer !important;
+            top: 0; left: 0; right: 0; bottom: 0 !important;
+            background-color: #ccc !important;
+            transition: .4s !important;
+            border-radius: 20px !important;
+        }
+        .slider:before {
+            position: absolute !important;
+            content: "" !important;
+            height: 14px !important;
+            width: 14px !important;
+            left: 3px !important;
+            bottom: 3px !important;
+            background-color: white !important;
+            transition: .4s !important;
+            border-radius: 50% !important;
+        }
+        input:checked + .slider { background-color: #3b82f6 !important; }
+        input:checked + .slider:before { transform: translateX(20px) !important; }
+        
+        .loading-btn { pointer-events: none; opacity: 0.7; position: relative; }
+        .loading-btn::after {
+            content: "";
+            position: absolute;
+            width: 16px; height: 16px;
+            top: 50%; left: 10px;
+            margin-top: -8px;
+            border: 2px solid white;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .num-input {
+            width: 50px !important;
+            text-align: right !important;
+            border: none !important;
+            background: #f3f4f6 !important;
+            padding: 2px 4px !important;
+            border-radius: 4px !important;
+            font-size: 10px !important;
+            font-weight: bold !important;
+            outline: none !important;
+        }
+        
+        #savedProfilesList::-webkit-scrollbar { width: 4px; }
+        #savedProfilesList::-webkit-scrollbar-track { background: transparent; }
+        #savedProfilesList::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+
+        canvas { 
+            display: block !important; 
+            max-width: 100% !important; 
+            height: auto !important;
+        }
+
+        .palette-item .remove-color {
+            display: none;
+            z-index: 10;
+        }
+        .palette-item:hover .remove-color {
+            display: flex;
+        }
+    ]]></b:skin>
+
+    <script src='https://cdn.tailwindcss.com'/>
+    <link href='https://fonts.googleapis.com/css2?family=Fredoka:wght@700&amp;family=Luckiest+Guy&amp;family=Lilita+One&amp;family=Sour+Gummy:wght@900&amp;family=Bungee&amp;family=Quicksand:wght@700&amp;display=swap' rel='stylesheet'/>
+    <script src='https://unpkg.com/lucide@latest'/>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'/>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/opentype.js/1.3.4/opentype.min.js'/>
+</head>
+
+<body class='bg-gray-100'>
+    <!-- Section Blogger agar tidak error saat simpan -->
+    <b:section id='content-section' showaddelement='yes' style='display:none;' title='Sticker Sections'/>
+
+    <div class='mx-auto' id='sticker-app-container'>
+        <!-- Header -->
+        <div class='text-center mb-8'>
+            <h2 class='text-3xl md:text-4xl font-black text-gray-800 flex items-center justify-center gap-2'>
+                <i class='text-yellow-500' data-lucide='sticker' style='width:32px;height:32px;'/> Sticker Text Pro
+            </h2>
+            <p class='text-gray-500 mt-1 text-[10px] md:text-xs font-bold uppercase tracking-[0.2em]'>Vector PDF &amp; SVG | Outlines &amp; Multi-Color Ready</p>
+        </div>
+
+        <div class='grid grid-cols-1 lg:grid-cols-12 gap-6'>
+            <!-- Sidebar Panel -->
+            <div class='lg:col-span-4 xl:col-span-3 space-y-4 bg-white p-5 rounded-2xl shadow-sm border border-gray-100 h-fit'>
+                <!-- Input Teks -->
+                <div>
+                    <label class='block text-[10px] font-black text-gray-400 mb-1 uppercase tracking-wider'>Tulis Teks</label>
+                    <input class='w-full px-4 py-3 border-2 border-gray-100 rounded-xl focus:border-blue-500 outline-none transition-all text-base font-bold' id='textInput' placeholder='Ketik sesuatu...' type='text' value='Eriska'/>
+                </div>
+
+                <!-- Pemilihan Font -->
+                <div class='space-y-3'>
+                    <div>
+                        <label class='block text-[10px] font-black text-gray-400 mb-1 uppercase tracking-wider'>Pilih Font</label>
+                        <select class='w-full p-2.5 border-2 border-gray-100 rounded-xl focus:border-blue-500 outline-none transition-all text-sm font-medium' id='fontFamily'>
+                            <option selected='selected' value='Lilita One'>Lilita One (Classic)</option>
+                            <option value='Sour Gummy'>Sour Gummy (Round)</option>
+                            <option value='Luckiest Guy'>Luckiest Guy (Comic)</option>
+                            <option value='Fredoka'>Fredoka (Rounded)</option>
+                            <option value='Bungee'>Bungee (Blocky)</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class='custom-file-upload group' id='uploadContainer'>
+                            <input accept='.ttf,.otf' class='hidden' id='fontUpload' type='file'/>
+                            <div class='flex flex-col items-center gap-1 text-center' id='uploadLabel'>
+                                <i class='text-blue-500 group-hover:scale-110 transition-transform' data-lucide='file-up' style='width:20px;height:20px;'/>
+                                <span class='text-[9px] font-black text-gray-500 uppercase tracking-tighter'>Konvert Ke Outlines</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Kontrol Ukuran & Outline -->
+                <div class='grid grid-cols-2 gap-4 bg-gray-50 p-3 rounded-xl border border-gray-100'>
+                    <div class='space-y-2'>
+                        <div class='flex justify-between items-center'>
+                            <label class='text-[9px] font-black text-gray-400 uppercase'>Ukuran</label>
+                            <input class='num-input' id='valFontSize' max='500' min='2' step='0.1' type='number' value='20'/>
+                        </div>
+                        <input class='w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600' id='fontSize' max='200' min='2' step='0.1' type='range' value='20'/>
+                    </div>
+                    <div class='space-y-2'>
+                        <div class='flex justify-between items-center'>
+                            <div class='flex items-center gap-1'>
+                                <input checked='checked' class='w-3 h-3 accent-blue-600 cursor-pointer' id='outlineEnable' type='checkbox'/>
+                                <label class='text-[9px] font-black text-gray-400 uppercase cursor-pointer' for='outlineEnable'>Outline</label>
+                            </div>
+                            <input class='num-input' id='valStrokeWidth' max='100' min='0' step='0.1' type='number' value='1.7'/>
+                        </div>
+                        <input class='w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600' id='strokeWidth' max='35' min='0' step='0.1' type='range' value='1.7'/>
+                    </div>
+                </div>
+
+                <!-- Outline Color Picker -->
+                <div class='flex items-center justify-between bg-gray-50 p-3 rounded-xl border border-gray-100'>
+                    <div class='flex items-center gap-2'>
+                        <i class='text-gray-500' data-lucide='pencil-line' style='width:16px;height:16px;'/>
+                        <span class='text-[10px] font-black text-gray-700 uppercase'>Warna Outline</span>
+                    </div>
+                    <input class='w-6 h-6 rounded-md border-0 cursor-pointer p-0 bg-transparent' id='outlineColor' type='color' value='#ffffff'/>
+                </div>
+
+                <!-- Profil Warna -->
+                <div>
+                    <label class='block text-[10px] font-black text-gray-400 mb-1 uppercase tracking-wider'>Profil Warna</label>
+                    <select class='w-full p-2.5 border-2 border-gray-100 rounded-xl focus:border-blue-500 outline-none transition-all text-xs font-bold' id='colorProfile'>
+                        <option selected='selected' value='vintage'>Vintage Soft</option>
+                        <option value='playful'>Playful (Ceria)</option>
+                        <option value='bold'>Bold</option>
+                        <option value='neon'>Electric Neon</option>
+                        <option value='solid'>Solid Colors</option>
+                        <option value='custom' style='display:none;'>Custom Profile</option>
+                    </select>
+                </div>
+
+                <!-- Mode Satu Warna -->
+                <div class='flex items-center justify-between bg-blue-50/50 p-3 rounded-xl border border-blue-100'>
+                    <div class='flex items-center gap-2'>
+                        <i class='text-blue-500' data-lucide='palette' style='width:16px;height:16px;'/>
+                        <span class='text-[10px] font-black text-blue-700 uppercase'>Mode Satu Warna</span>
+                    </div>
+                    <label class='switch'>
+                        <input id='singleColorMode' type='checkbox'/>
+                        <span class='slider'/>
+                    </label>
+                </div>
+
+                <!-- Palette Editor -->
+                <div class='space-y-2'>
+                    <div class='flex justify-between items-end'>
+                        <label class='text-[10px] font-black text-gray-400 uppercase'>Edit Palet</label>
+                        <div class='flex items-center gap-2'>
+                            <button class='text-[9px] font-bold text-red-500 hover:underline' id='resetPaletteBtn'>RESET</button>
+                            <div class='flex items-center gap-1 bg-gray-100 px-1.5 py-0.5 rounded-md border border-gray-200'>
+                                <span class='text-[8px] font-black text-gray-500'>+</span>
+                                <input class='w-4 h-4 rounded-full border-0 cursor-pointer p-0 bg-transparent' id='customColorInput' type='color' value='#3b82f6'/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class='grid grid-cols-5 gap-2' id='colorPalette'/>
+                </div>
+
+                <!-- Profil Save System -->
+                <div class='pt-4 border-t border-gray-100 space-y-3'>
+                    <label class='block text-[10px] font-black text-gray-400 uppercase tracking-wider'>Simpan Profil</label>
+                    <div class='flex flex-wrap gap-1.5'>
+                        <input class='flex-grow min-w-0 px-3 py-2 border-2 border-gray-100 rounded-lg text-xs outline-none focus:border-blue-400 font-medium' id='profileNameInput' placeholder='Nama desain...' type='text'/>
+                        <button class='bg-gray-800 text-white px-3 py-2 rounded-lg text-[10px] font-black hover:bg-black transition-all flex items-center justify-center gap-1 whitespace-nowrap' id='saveProfileBtn'>
+                            <i data-lucide='save' style='width:12px;height:12px;'/> SIMPAN
+                        </button>
+                    </div>
+                    
+                    <div class='flex justify-between items-center mt-4 mb-2'>
+                        <label class='text-[10px] font-black text-gray-400 uppercase tracking-wider'>Desain Tersimpan</label>
+                        <div class='flex gap-2'>
+                            <!-- Export Button -->
+                            <button class='text-gray-400 hover:text-blue-600 transition-colors flex items-center gap-1 tooltip-container relative group' id='exportProfilesBtn' title='Ekspor Data'>
+                                <i data-lucide='download-cloud' style='width:14px;height:14px;'/>
+                            </button>
+                            <!-- Import Button -->
+                            <button class='text-gray-400 hover:text-emerald-600 transition-colors flex items-center gap-1 group relative' id='importProfilesBtn' title='Impor Data'>
+                                <i data-lucide='upload-cloud' style='width:14px;height:14px;'/>
+                                <input class='hidden' id='importFileInput' type='file' accept='.json'/>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class='space-y-1.5 max-h-[150px] overflow-y-auto pr-1' id='savedProfilesList'>
+                        <!-- Profiles inject here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Preview Area -->
+            <div class='lg:col-span-8 xl:col-span-9 flex flex-col gap-4'>
+                <div class='canvas-area flex-grow min-h-[400px] md:min-h-[500px] flex items-center justify-center bg-gray-50 p-6 overflow-hidden border-4 border-white shadow-xl relative'>
+                    <canvas class='drop-shadow-2xl' id='textCanvas'/>
+                    
+                    <!-- Floating Badge -->
+                    <div class='absolute bottom-4 left-4 flex gap-2'>
+                        <span class='px-2 py-1 bg-white/90 backdrop-blur text-yellow-700 text-[9px] font-black rounded-md shadow-sm border border-yellow-200 uppercase'>Illustrator Friendly</span>
+                        <span class='px-2 py-1 bg-white/90 backdrop-blur text-blue-700 text-[9px] font-black rounded-md shadow-sm border border-blue-200 uppercase'>Vector Kurva</span>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class='bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4'>
+                    <p class='text-[10px] text-gray-400 font-mono italic order-2 sm:order-1' id='statusText'>Sistem siap digunakan.</p>
+                    
+                    <div class='flex flex-wrap items-center justify-center gap-2 order-1 sm:order-2'>
+                        <button class='bg-emerald-600 text-white px-4 py-2.5 rounded-xl font-black hover:bg-emerald-700 transition-all flex items-center gap-2 text-[11px] shadow-sm' id='downloadSvgBtn'>
+                            <i data-lucide='file-code' style='width:14px;height:14px;'/> SVG
+                        </button>
+                        <button class='bg-rose-600 text-white px-4 py-2.5 rounded-xl font-black hover:bg-rose-700 transition-all flex items-center gap-2 text-[11px] shadow-sm' id='downloadPdfBtn'>
+                            <i data-lucide='file-text' style='width:14px;height:14px;'/> PDF
+                        </button>
+                        <button class='bg-blue-600 text-white px-6 py-2.5 rounded-xl font-black hover:bg-blue-700 transition-all shadow-lg flex items-center gap-3 group' id='downloadBtn'>
+                            <i data-lucide='download' style='width:16px;height:16px;'/> 
+                            <div class='text-left leading-none'>
+                                <p class='text-[11px]'>SIMPAN PNG</p>
+                                <p class='text-[8px] opacity-70 font-normal mt-0.5'>600 DPI HD</p>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type='text/javascript'>
+        //<![CDATA[
+        (function() {
+            const canvas = document.getElementById('textCanvas');
+            const ctx = canvas.getContext('2d');
+            const textInput = document.getElementById('textInput');
+            const fontFamily = document.getElementById('fontFamily');
+            const fontUpload = document.getElementById('fontUpload');
+            const uploadLabel = document.getElementById('uploadLabel');
+            const fontSize = document.getElementById('fontSize');
+            const strokeWidth = document.getElementById('strokeWidth');
+            const outlineEnable = document.getElementById('outlineEnable');
+            const outlineColor = document.getElementById('outlineColor');
+            const valFontSize = document.getElementById('valFontSize');
+            const valStrokeWidth = document.getElementById('valStrokeWidth');
+            const colorProfile = document.getElementById('colorProfile');
+            const colorPaletteContainer = document.getElementById('colorPalette');
+            const singleColorMode = document.getElementById('singleColorMode');
+            const statusText = document.getElementById('statusText');
+            const customColorInput = document.getElementById('customColorInput');
+            const resetPaletteBtn = document.getElementById('resetPaletteBtn');
+            const profileNameInput = document.getElementById('profileNameInput');
+            const saveProfileBtn = document.getElementById('saveProfileBtn');
+            const savedProfilesList = document.getElementById('savedProfilesList');
+            const exportProfilesBtn = document.getElementById('exportProfilesBtn');
+            const importProfilesBtn = document.getElementById('importProfilesBtn');
+            const importFileInput = document.getElementById('importFileInput');
+
+            const profiles = {
+                // KOMPOSISI VINTAGE SOFT 6 WARNA SESUAI GAMBAR TERBARU
+                vintage: ['#84a5ba', '#d87459', '#e9c465', '#f8c5af', '#a7c1ae', '#84a5ba'],
+                playful: ['#ff0000', '#2baae2', '#3db54a', '#f79421'],
+                bold: ['#df775b', '#749bb5', '#edba65', '#fccdba', '#e1863b', '#b7ccbb'],
+                neon: ['#39FF14', '#FF00FF', '#00FFFF', '#FFFF00', '#FF0000', '#9D00FF', '#FF1493', '#00FF00', '#FF4500', '#1E90FF'],
+                solid: ['#FF0000', '#0000FF', '#008000', '#FFFF00', '#FFA500', '#800080', '#FFC0CB', '#000000', '#FFFFFF', '#808080']
+            };
+
+            let charColors = [];
+            let currentPalette = [];
+            let currentSelectedColors = [];
+            let currentOpentypeFont = null; 
+            let uploadedFontName = null;
+            const DPI_SCALE = 6.25; 
+
+            function hexToRgb(hex) {
+                const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                return result ? {
+                    r: parseInt(result[1], 16),
+                    g: parseInt(result[2], 16),
+                    b: parseInt(result[3], 16)
+                } : { r: 255, g: 255, b: 255 };
+            }
+
+            function escapeXml(unsafe) {
+                return unsafe.replace(/[<>&"']/g, function (m) {
+                    const map = {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&apos;'};
+                    return map[m];
+                });
+            }
+
+            function init() {
+                updateUIValues();
+                initPalette('vintage');
+                loadSavedProfiles();
+                lucide.createIcons();
+                document.fonts.ready.then(() => draw());
+            }
+
+            function updateUIValues() {
+                valFontSize.value = parseFloat(fontSize.value).toFixed(1);
+                valStrokeWidth.value = parseFloat(strokeWidth.value).toFixed(1);
+            }
+
+            function initPalette(profileKey, customList = null, selectedList = null) {
+                // Bersihkan palette lama sepenuhnya sebelum mengisi baru
+                currentPalette = customList ? [...customList] : [...profiles[profileKey]];
+                renderPalette(selectedList);
+            }
+
+            function renderPalette(selectedList = null) {
+                colorPaletteContainer.innerHTML = '';
+                currentPalette.forEach((color, i) => {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'relative palette-item group';
+                    const isWhite = color.toUpperCase() === '#FFFFFF' || color.toLowerCase() === 'white';
+                    const borderClass = isWhite ? 'border-gray-200' : 'border-white';
+                    
+                    const isChecked = selectedList ? selectedList.includes(color) : true;
+
+                    wrapper.innerHTML = `
+                        <input type="checkbox" id="c-${i}" class="hidden color-checkbox" ${isChecked ? 'checked="checked"' : ''} value="${color}"/>
+                        <label for="c-${i}" class="block w-full h-8 rounded-lg cursor-pointer border-2 ${borderClass} shadow-sm transition-all" style="background-color:${color}"></label>
+                        <button class="remove-color absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-[8px] font-black shadow-sm hover:bg-red-600 transition-colors" data-index="${i}">×</button>
+                    `;
+                    colorPaletteContainer.appendChild(wrapper);
+
+                    wrapper.querySelector('input').addEventListener('change', (e) => {
+                        if (singleColorMode.checked && e.target.checked) {
+                            colorPaletteContainer.querySelectorAll('.color-checkbox').forEach(cb => { 
+                                if (cb !== e.target) cb.checked = false; 
+                            });
+                        }
+                        updateSelectedColors();
+                        draw();
+                    });
+
+                    wrapper.querySelector('.remove-color').addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const index = parseInt(e.target.dataset.index);
+                        currentPalette.splice(index, 1);
+                        if (currentPalette.length === 0) currentPalette = ['#000000'];
+                        renderPalette();
+                        updateSelectedColors();
+                        draw();
+                    });
+                });
+                updateSelectedColors();
+            }
+
+            function updateSelectedColors() {
+                const checkboxes = colorPaletteContainer.querySelectorAll('.color-checkbox:checked');
+                currentSelectedColors = Array.from(checkboxes).map(cb => cb.value);
+                if (currentSelectedColors.length === 0) {
+                    currentSelectedColors = currentPalette.length > 0 ? [currentPalette[0]] : ['#000000'];
+                }
+                updateCharColors();
+            }
+
+            function updateCharColors() {
+                const text = textInput.value || " ";
+                const isSingle = singleColorMode.checked;
+                charColors = [];
+                for (let i = 0; i < text.length; i++) {
+                    charColors.push(isSingle ? currentSelectedColors[0] : currentSelectedColors[i % currentSelectedColors.length]);
+                }
+            }
+
+            customColorInput.addEventListener('change', (e) => {
+                const newColor = e.target.value;
+                if (!currentPalette.includes(newColor)) {
+                    currentPalette.push(newColor);
+                    colorProfile.value = 'custom';
+                    renderPalette();
+                    draw();
+                }
+            });
+
+            resetPaletteBtn.addEventListener('click', () => { 
+                const key = colorProfile.value === 'custom' ? 'vintage' : colorProfile.value;
+                if(colorProfile.value === 'custom') colorProfile.value = 'vintage';
+                initPalette(key); 
+                draw(); 
+            });
+
+            function saveProfile() {
+                const name = profileNameInput.value.trim() || textInput.value || "Tanpa Nama";
+                const profileData = {
+                    id: Date.now(),
+                    name,
+                    text: textInput.value,
+                    font: fontFamily.value,
+                    size: fontSize.value,
+                    stroke: strokeWidth.value,
+                    outline: outlineEnable.checked,
+                    outlineColor: outlineColor.value,
+                    singleMode: singleColorMode.checked,
+                    palette: [...currentPalette],
+                    selectedColors: [...currentSelectedColors] 
+                };
+                let saved = JSON.parse(localStorage.getItem('sticker_profiles_v3') || '[]');
+                saved.unshift(profileData);
+                if (saved.length > 50) saved.pop(); // Kapasitas lebih besar untuk cadangan
+                localStorage.setItem('sticker_profiles_v3', JSON.stringify(saved));
+                profileNameInput.value = '';
+                loadSavedProfiles();
+                statusText.innerText = `Desain "${name}" tersimpan.`;
+            }
+
+            function loadSavedProfiles() {
+                savedProfilesList.innerHTML = '';
+                let saved = JSON.parse(localStorage.getItem('sticker_profiles_v3') || '[]');
+                if (saved.length === 0) {
+                    savedProfilesList.innerHTML = '<p class="text-[9px] text-gray-400 text-center py-4 bg-gray-50 rounded-lg border border-dashed border-gray-200 uppercase font-bold">Belum ada desain.</p>';
+                    return;
+                }
+                saved.forEach(p => {
+                    const div = document.createElement('div');
+                    div.className = 'profile-item flex items-center justify-between p-2 bg-gray-50 rounded-lg border border-gray-200 cursor-pointer hover:bg-blue-50 hover:border-blue-200 transition-all group';
+                    div.innerHTML = `
+                        <div class="flex-grow min-w-0 pr-2">
+                            <p class="text-[9px] font-black text-gray-700 truncate uppercase">${p.name}</p>
+                            <div class="flex gap-1 mt-1">
+                                ${p.palette.slice(0, 6).map(c => `<div class="w-1.5 h-1.5 rounded-full" style="background-color:${c}"></div>`).join('')}
+                            </div>
+                        </div>
+                        <button class="delete-profile opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 p-1 transition-all" data-id="${p.id}"><i data-lucide="trash-2" style="width:10px;height:10px;"></i></button>
+                    `;
+                    div.onclick = (e) => { if (!e.target.closest('.delete-profile')) applyProfile(p); };
+                    div.querySelector('.delete-profile').onclick = (e) => {
+                        e.stopPropagation();
+                        let s = JSON.parse(localStorage.getItem('sticker_profiles_v3') || '[]');
+                        localStorage.setItem('sticker_profiles_v3', JSON.stringify(s.filter(x => x.id != p.id)));
+                        loadSavedProfiles();
+                    };
+                    savedProfilesList.appendChild(div);
+                });
+                lucide.createIcons();
+            }
+
+            function applyProfile(p) {
+                textInput.value = p.text; 
+                fontFamily.value = p.font;
+                fontSize.value = p.size; 
+                strokeWidth.value = p.stroke;
+                outlineEnable.checked = p.outline; 
+                if (p.outlineColor) outlineColor.value = p.outlineColor;
+                singleColorMode.checked = p.singleMode;
+                colorProfile.value = 'custom';
+                
+                initPalette(null, p.palette, p.selectedColors); 
+                updateCharColors();
+                draw();
+                statusText.innerText = `Memuat profil: ${p.name}`;
+            }
+
+            // --- EKSPOR DATA PROFIL ---
+            exportProfilesBtn.addEventListener('click', () => {
+                const saved = localStorage.getItem('sticker_profiles_v3');
+                if (!saved || saved === '[]') {
+                    statusText.innerText = "Gagal: Tidak ada data profil untuk diekspor.";
+                    return;
+                }
+                const blob = new Blob([saved], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `sticker-profiles-backup-${new Date().toISOString().slice(0,10)}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                statusText.innerText = "Data profil berhasil diekspor.";
+            });
+
+            // --- IMPOR DATA PROFIL ---
+            importProfilesBtn.addEventListener('click', () => importFileInput.click());
+            importFileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const importedData = JSON.parse(event.target.result);
+                        if (!Array.isArray(importedData)) throw new Error("Format tidak valid");
+                        
+                        let currentData = JSON.parse(localStorage.getItem('sticker_profiles_v3') || '[]');
+                        // Gabungkan data (berdasarkan ID agar tidak duplikat)
+                        const mergedData = [...importedData, ...currentData].reduce((acc, current) => {
+                            const x = acc.find(item => item.id === current.id);
+                            if (!x) return acc.concat([current]);
+                            else return acc;
+                        }, []);
+
+                        localStorage.setItem('sticker_profiles_v3', JSON.stringify(mergedData));
+                        loadSavedProfiles();
+                        statusText.innerText = `Berhasil mengimpor ${importedData.length} profil.`;
+                    } catch (err) {
+                        statusText.innerText = "Error: File JSON tidak valid atau rusak.";
+                    }
+                };
+                reader.readAsText(file);
+                e.target.value = ''; // Reset input agar bisa pilih file yang sama lagi
+            });
+
+            saveProfileBtn.addEventListener('click', saveProfile);
+
+            fontUpload.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    try {
+                        currentOpentypeFont = opentype.parse(event.target.result);
+                        uploadedFontName = 'UserFont_' + Math.random().toString(36).substr(2, 5);
+                        const fontFace = new FontFace(uploadedFontName, event.target.result);
+                        fontFace.load().then(function(loadedFace) {
+                            document.fonts.add(loadedFace);
+                            const newOption = document.createElement('option');
+                            newOption.value = uploadedFontName; newOption.text = 'Kustom: ' + file.name;
+                            fontFamily.add(newOption); fontFamily.value = uploadedFontName;
+                            uploadLabel.innerHTML = `<i data-lucide="check-circle-2" class="text-green-500" style="width:20px;height:20px;"></i><span class="text-green-600 font-black text-[9px] uppercase">Vektor Aktif</span>`;
+                            lucide.createIcons(); draw();
+                        });
+                    } catch (err) { statusText.innerText = "Gagal memproses font vektor."; }
+                };
+                reader.readAsArrayBuffer(file);
+            });
+
+            async function renderToCanvas(targetCanvas, targetCtx, scale = 1) {
+                const text = textInput.value || " ";
+                const size = parseFloat(fontSize.value) * scale;
+                const sWidth = parseFloat(strokeWidth.value) * scale;
+                const fontSpec = `900 ${size}px "${fontFamily.value}", sans-serif`;
+                await document.fonts.load(fontSpec, text);
+                targetCtx.font = fontSpec;
+                const m = targetCtx.measureText(text);
+                
+                targetCanvas.width = m.width + (size * 1.5);
+                targetCanvas.height = size * 3;
+                
+                targetCtx.font = fontSpec; 
+                targetCtx.textBaseline = 'middle';
+                targetCtx.textAlign = 'center'; 
+                targetCtx.lineJoin = 'round'; 
+                targetCtx.lineCap = 'round';
+                
+                const y = targetCanvas.height / 2;
+                let curX = (targetCanvas.width - m.width) / 2;
+
+                if (outlineEnable.checked) {
+                    targetCtx.strokeStyle = outlineColor.value; 
+                    targetCtx.lineWidth = sWidth * 2.5;
+                    let tx = curX;
+                    for (let i = 0; i < text.length; i++) {
+                        const cw = targetCtx.measureText(text[i]).width;
+                        targetCtx.strokeText(text[i], tx + cw/2, y); tx += cw;
+                    }
+                }
+                
+                let tx = curX;
+                for (let i = 0; i < text.length; i++) {
+                    const cw = targetCtx.measureText(text[i]).width;
+                    targetCtx.fillStyle = charColors[i % charColors.length] || '#000000';
+                    targetCtx.fillText(text[i], tx + cw/2, y); tx += cw;
+                }
+            }
+
+            async function draw() { updateUIValues(); await renderToCanvas(canvas, ctx, 1); }
+
+            function drawOpentypeToPDF(pdf, font, text, startX, y, size, color, strokeWidth, isStroke) {
+                let currentX = startX;
+                const rgb = hexToRgb(color);
+                for (let i = 0; i < text.length; i++) {
+                    const char = text[i];
+                    const charWidth = ctx.measureText(char).width;
+                    const path = font.getPath(char, currentX, y + (size / 3.5), size);
+                    if (isStroke) {
+                        pdf.setDrawColor(rgb.r, rgb.g, rgb.b); 
+                        pdf.setLineWidth(strokeWidth * 2.5);
+                        pdf.setLineJoin('round'); pdf.setLineCap('round');
+                    } else {
+                        pdf.setFillColor(rgb.r, rgb.g, rgb.b);
+                    }
+                    path.commands.forEach(function(c) {
+                        switch(c.type) {
+                            case 'M': pdf.moveTo(c.x, c.y); break;
+                            case 'L': pdf.lineTo(c.x, c.y); break;
+                            case 'C': pdf.bezierCurveTo(c.x1, c.y1, c.x2, c.y2, c.x, c.y); break;
+                            case 'Q': pdf.quadraticCurveTo(c.x1, c.y1, c.x, c.y); break;
+                            case 'Z': pdf.close(); break;
+                        }
+                    });
+                    pdf.fillStroke(isStroke ? 'S' : 'F');
+                    currentX += charWidth;
+                }
+            }
+
+            textInput.addEventListener('input', function() { updateCharColors(); draw(); });
+            fontFamily.addEventListener('change', draw);
+            fontSize.addEventListener('input', draw);
+            strokeWidth.addEventListener('input', draw);
+            outlineColor.addEventListener('input', draw);
+            valFontSize.addEventListener('input', function(e) { 
+                if(!isNaN(e.target.value)) { fontSize.value = e.target.value; draw(); }
+            });
+            valStrokeWidth.addEventListener('input', function(e) { 
+                if(!isNaN(e.target.value)) { strokeWidth.value = e.target.value; draw(); }
+            });
+            outlineEnable.addEventListener('change', draw);
+            colorProfile.addEventListener('change', function(e) { 
+                if(e.target.value !== 'custom') initPalette(e.target.value); 
+                draw(); 
+            });
+            singleColorMode.addEventListener('change', function() { updateCharColors(); draw(); });
+
+            document.getElementById('downloadBtn').addEventListener('click', async function(e) {
+                e.currentTarget.classList.add('loading-btn');
+                const c = document.createElement('canvas');
+                await renderToCanvas(c, c.getContext('2d'), DPI_SCALE);
+                const a = document.createElement('a');
+                a.download = `sticker-${textInput.value.toLowerCase().replace(/\s+/g, '-')}.png`;
+                a.href = c.toDataURL('image/png', 1.0); a.click();
+                e.currentTarget.classList.remove('loading-btn');
+            });
+
+            document.getElementById('downloadPdfBtn').addEventListener('click', async function(e) {
+                const btn = e.currentTarget;
+                btn.classList.add('loading-btn');
+                const { jsPDF } = window.jspdf;
+                const text = textInput.value;
+                const m = ctx.measureText(text);
+                const s = parseFloat(fontSize.value);
+                const w = m.width + (s * 1.5);
+                const h = s * 3;
+                const pdf = new jsPDF({ orientation: w > h ? 'l' : 'p', unit: 'px', format: [w, h], compress: true });
+
+                if (currentOpentypeFont) {
+                    const startX = (w - m.width) / 2;
+                    const startY = h / 2;
+                    if (outlineEnable.checked) drawOpentypeToPDF(pdf, currentOpentypeFont, text, startX, startY, s, outlineColor.value, strokeWidth.value, true);
+                    for (let i = 0; i < text.length; i++) {
+                        const charX = startX + ctx.measureText(text.substring(0, i)).width;
+                        const color = charColors[i % charColors.length] || '#000000';
+                        drawOpentypeToPDF(pdf, currentOpentypeFont, text[i], charX, startY, s, color, 0, false);
+                    }
+                } else {
+                    const c = document.createElement('canvas');
+                    await renderToCanvas(c, c.getContext('2d'), DPI_SCALE);
+                    pdf.addImage(c.toDataURL('image/png', 1.0), 'PNG', 0, 0, w, h);
+                }
+                pdf.save(`sticker-${text.toLowerCase().replace(/\s+/g, '-')}.pdf`);
+                btn.classList.remove('loading-btn');
+            });
+
+            document.getElementById('downloadSvgBtn').addEventListener('click', function() {
+                const s = parseFloat(fontSize.value), w = canvas.width, h = canvas.height, y = h / 2;
+                const m = ctx.measureText(textInput.value); let curX = (w - m.width) / 2;
+                let svg = `<?xml version="1.0" encoding="UTF-8"?><svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">`;
+                if (currentOpentypeFont) {
+                    if (outlineEnable.checked) {
+                        let tx = curX;
+                        for (let i = 0; i < textInput.value.length; i++) {
+                            const cw = ctx.measureText(textInput.value[i]).width;
+                            const p = currentOpentypeFont.getPath(textInput.value[i], tx, y + (s/3.5), s);
+                            svg += `<path d="${p.toPathData(2)}" fill="${outlineColor.value}" stroke="${outlineColor.value}" stroke-width="${strokeWidth.value * 2.5}" stroke-linejoin="round" />`;
+                            tx += cw;
+                        }
+                    }
+                    let tx = curX;
+                    for (let i = 0; i < textInput.value.length; i++) {
+                        const cw = ctx.measureText(textInput.value[i]).width;
+                        const p = currentOpentypeFont.getPath(textInput.value[i], tx, y + (s/3.5), s);
+                        svg += `<path d="${p.toPathData(2)}" fill="${charColors[i % charColors.length]}" />`;
+                        tx += cw;
+                    }
+                } else {
+                    svg += `<style>text { font-family: "${fontFamily.value}", sans-serif; font-weight: 900; font-size: ${s}px; dominant-baseline: middle; text-anchor: middle; }</style>`;
+                    if (outlineEnable.checked) {
+                        svg += `<g stroke="${outlineColor.value}" stroke-width="${strokeWidth.value * 2.5}" stroke-linejoin="round" fill="${outlineColor.value}">`;
+                        let tx = curX;
+                        for (let i = 0; i < textInput.value.length; i++) {
+                            const cw = ctx.measureText(textInput.value[i]).width;
+                            svg += `<text x="${tx + cw/2}" y="${y}">${escapeXml(textInput.value[i])}</text>`; tx += cw;
+                        }
+                        svg += `</g>`;
+                    }
+                    svg += `<g>`; let tx = curX;
+                    for (let i = 0; i < textInput.value.length; i++) {
+                        const cw = ctx.measureText(textInput.value[i]).width;
+                        svg += `<text x="${tx + cw/2}" y="${y}" fill="${charColors[i % charColors.length]}">${escapeXml(textInput.value[i])}</text>`; tx += cw;
+                    }
+                    svg += `</g>`;
+                }
+                svg += `</svg>`;
+                const b = new Blob([svg], {type: 'image/svg+xml'}); const u = URL.createObjectURL(b);
+                const a = document.createElement('a'); a.href = u; a.download = `sticker-${textInput.value.toLowerCase().replace(/\s+/g, '-')}.svg`; a.click();
+            });
+
+            window.onload = init;
+        })();
+        //]]>
+    </script>
+</body>
+</html>

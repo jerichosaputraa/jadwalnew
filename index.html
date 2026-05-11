@@ -2,13 +2,13 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content='width=device-width, initial-scale=1' name='viewport'/>
     <title>Sticker Text Generator - Pro</title>
     
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@700&family=Luckiest+Guy&family=Lilita+One&family=Sour+Gummy:wght@900&family=Bungee&family=Quicksand:wght@700&display=swap" rel="stylesheet"/>
+    <script src='https://cdn.tailwindcss.com'></script>
+    <link href='https://fonts.googleapis.com/css2?family=Fredoka:wght@700&family=Luckiest+Guy&family=Lilita+One&family=Sour+Gummy:wght@900&family=Bungee&family=Quicksand:wght@700&display=swap' rel='stylesheet'/>
     
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src='https://unpkg.com/lucide@latest'></script>
 
     <style>
         body { background-color: #f3f4f6; font-family: 'Quicksand', sans-serif; }
@@ -31,30 +31,30 @@
     </style>
 </head>
 <body>
-    <div id="sticker-app-container">
-        <div class="text-center mb-8">
-            <h2 class="text-3xl md:text-4xl font-black text-gray-800 flex items-center justify-center gap-2">
-                <i data-lucide="sticker" class="text-yellow-500 w-8 h-8"></i> Sticker Text Pro
+    <div id='sticker-app-container'>
+        <div class='text-center mb-8'>
+            <h2 class='text-3xl md:text-4xl font-black text-gray-800 flex items-center justify-center gap-2'>
+                <i data-lucide='sticker' class='text-yellow-500 w-8 h-8'></i> Sticker Text Pro
             </h2>
-            <p class="text-gray-500 mt-1 text-[10px] md:text-xs font-bold uppercase tracking-[0.2em]">Custom Font & Multi-Color System</p>
+            <p class='text-gray-500 mt-1 text-[10px] md:text-xs font-bold uppercase tracking-[0.2em]'>Custom Font & Multi-Color Ready</p>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div class="lg:col-span-4 xl:col-span-3 space-y-5 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-fit">
+        <div class='grid grid-cols-1 lg:grid-cols-12 gap-6'>
+            <div class='lg:col-span-4 xl:col-span-3 space-y-5 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-fit'>
                 <div>
-                    <label class="block text-[10px] font-black text-gray-400 mb-1 uppercase tracking-wider">Tulis Teks</label>
-                    <input class="w-full px-4 py-3 border-2 border-gray-100 rounded-xl focus:border-blue-500 outline-none text-base font-bold" id="textInput" type="text" value="Jericho"/>
+                    <label class='block text-[10px] font-black text-gray-400 mb-1 uppercase tracking-wider'>Tulis Teks</label>
+                    <input class='w-full px-4 py-3 border-2 border-gray-100 rounded-xl focus:border-blue-500 outline-none text-base font-bold' id='textInput' type='text' value='Jericho'/>
                 </div>
 
-                <div class="space-y-3">
+                <div class='space-y-3'>
                     <div>
-                        <label class="block text-[10px] font-black text-gray-400 mb-1 uppercase tracking-wider">Pilih Font</label>
-                        <select class="w-full p-2.5 border-2 border-gray-100 rounded-xl text-sm font-bold" id="fontFamily">
-                            <option selected value="Lilita One">Lilita One</option>
-                            <option value="Sour Gummy">Sour Gummy</option>
-                            <option value="Luckiest Guy">Luckiest Guy</option>
-                            <option value="Fredoka">Fredoka</option>
-                            <option value="Bungee">Bungee</option>
+                        <label class='block text-[10px] font-black text-gray-400 mb-1 uppercase tracking-wider'>Pilih Font</label>
+                        <select class='w-full p-2.5 border-2 border-gray-100 rounded-xl text-sm font-bold' id='fontFamily'>
+                            <option selected value='Lilita One'>Lilita One</option>
+                            <option value='Sour Gummy'>Sour Gummy</option>
+                            <option value='Luckiest Guy'>Luckiest Guy</option>
+                            <option value='Fredoka'>Fredoka</option>
+                            <option value='Bungee'>Bungee</option>
                         </select>
                     </div>
                     
@@ -68,62 +68,62 @@
                     </label>
                 </div>
 
-                <div class="grid grid-cols-2 gap-4 bg-gray-50 p-3 rounded-xl border border-gray-100">
-                    <div class="space-y-2">
-                        <div class="flex justify-between items-center">
-                            <label class="text-[9px] font-black text-gray-400 uppercase">Ukuran</label>
-                            <input class="num-input" id="valFontSize" type="number" value="20"/>
+                <div class='grid grid-cols-2 gap-4 bg-gray-50 p-3 rounded-xl border border-gray-100'>
+                    <div class='space-y-2'>
+                        <div class='flex justify-between items-center'>
+                            <label class='text-[9px] font-black text-gray-400 uppercase'>Ukuran</label>
+                            <input class='num-input' id='valFontSize' type='number' value='20' step="0.1"/>
                         </div>
-                        <input class="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer" id="fontSize" max="300" min="10" type="range" value="20"/>
+                        <input class='w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer' id='fontSize' max='300' min='2' step="0.1" type='range' value='20'/>
                     </div>
-                    <div class="space-y-2">
-                        <div class="flex justify-between items-center">
-                            <div class="flex items-center gap-1">
-                                <input checked class="w-3 h-3 accent-blue-600" id="outlineEnable" type="checkbox"/>
-                                <label class="text-[9px] font-black text-gray-400 uppercase cursor-pointer" for="outlineEnable">Outline</label>
+                    <div class='space-y-2'>
+                        <div class='flex justify-between items-center'>
+                            <div class='flex items-center gap-1'>
+                                <input checked class='w-3 h-3 accent-blue-600' id='outlineEnable' type='checkbox'/>
+                                <label class='text-[9px] font-black text-gray-400 uppercase cursor-pointer' for='outlineEnable'>Outline</label>
                             </div>
-                            <input class="num-input" id="valStrokeWidth" type="number" value="1.7"/>
+                            <input class='num-input' id='valStrokeWidth' type='number' value='1.7' step="0.1"/>
                         </div>
-                        <input class="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer" id="strokeWidth" max="40" min="0" step="0.5" type="range" value="1.7"/>
+                        <input class='w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer' id='strokeWidth' max='40' min='0' step='0.1' type='range' value='1.7'/>
                     </div>
                 </div>
 
-                <div class="flex items-center justify-between bg-gray-50 p-3 rounded-xl border border-gray-100">
-                    <span class="text-[10px] font-black text-gray-700 uppercase">Warna Outline</span>
-                    <input class="w-7 h-7 rounded-md cursor-pointer border-2 border-white shadow-sm" id="outlineColor" type="color" value="#ffffff"/>
+                <div class='flex items-center justify-between bg-gray-50 p-3 rounded-xl border border-gray-100'>
+                    <span class='text-[10px] font-black text-gray-700 uppercase'>Warna Outline</span>
+                    <input class='w-7 h-7 rounded-md cursor-pointer border-2 border-white shadow-sm' id='outlineColor' type='color' value='#ffffff'/>
                 </div>
 
                 <div>
-                    <label class="block text-[10px] font-black text-gray-400 mb-2 uppercase tracking-wider">Profil Warna</label>
-                    <select class="w-full p-2.5 border-2 border-gray-100 rounded-xl text-xs font-bold mb-3" id="colorProfile">
-                        <option value="playful">Playful Bright</option>
-                        <option value="vintage">Vintage Soft</option>
-                        <option value="pastel">Sweet Pastel</option>
-                        <option value="neon">Electric Neon</option>
-                        <option value="earth">Earth Tones</option>
+                    <label class='block text-[10px] font-black text-gray-400 mb-2 uppercase tracking-wider'>Profil Warna</label>
+                    <select class='w-full p-2.5 border-2 border-gray-100 rounded-xl text-xs font-bold mb-3' id='colorProfile'>
+                        <option selected value='playful'>Playful Bright</option>
+                        <option value='vintage'>Vintage Soft</option>
+                        <option value='pastel'>Sweet Pastel</option>
+                        <option value='neon'>Electric Neon</option>
+                        <option value='earth'>Earth Tones</option>
                     </select>
-                    <div class="grid grid-cols-5 gap-2" id="colorPalette"></div>
+                    <div class='grid grid-cols-5 gap-2' id='colorPalette'></div>
                 </div>
 
-                <div class="flex items-center justify-between bg-blue-50 p-3 rounded-xl border border-blue-100">
-                    <span class="text-[10px] font-black text-blue-700 uppercase">Mode Satu Warna</span>
-                    <label class="switch">
-                        <input id="singleColorMode" type="checkbox"/>
-                        <span class="slider"></span>
+                <div class='flex items-center justify-between bg-blue-50 p-3 rounded-xl border border-blue-100'>
+                    <span class='text-[10px] font-black text-blue-700 uppercase'>Mode Satu Warna</span>
+                    <label class='switch'>
+                        <input id='singleColorMode' type='checkbox'/>
+                        <span class='slider'></span>
                     </label>
                 </div>
             </div>
 
-            <div class="lg:col-span-8 xl:col-span-9 flex flex-col gap-4">
-                <div class="canvas-area flex-grow min-h-[500px] flex items-center justify-center relative bg-gray-50 border-4 border-white shadow-xl overflow-hidden">
-                    <canvas id="textCanvas"></canvas>
+            <div class='lg:col-span-8 xl:col-span-9 flex flex-col gap-4'>
+                <div class='canvas-area flex-grow min-h-[500px] flex items-center justify-center relative bg-gray-50 border-4 border-white shadow-xl overflow-hidden'>
+                    <canvas id='textCanvas'></canvas>
                 </div>
-                <div class="bg-white p-5 rounded-2xl flex flex-wrap justify-between items-center gap-4 border border-gray-100">
-                    <div class="flex items-center gap-2">
-                        <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                        <p class="text-[11px] text-gray-500 font-bold uppercase tracking-widest" id="statusText">Sistem siap.</p>
+                <div class='bg-white p-5 rounded-2xl flex flex-wrap justify-between items-center gap-4 border border-gray-100'>
+                    <div class='flex items-center gap-2'>
+                        <div class='w-2 h-2 bg-emerald-500 rounded-full animate-pulse'></div>
+                        <p class='text-[11px] text-gray-500 font-bold uppercase tracking-widest' id='statusText'>Sistem siap.</p>
                     </div>
-                    <button class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-black transition-all active:scale-95 shadow-lg shadow-blue-200" id="downloadBtn">SIMPAN PNG</button>
+                    <button class='bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-black transition-all active:scale-95 shadow-lg shadow-blue-200' id='downloadBtn'>SIMPAN PNG</button>
                 </div>
             </div>
         </div>
@@ -163,7 +163,6 @@
             document.fonts.ready.then(draw);
         }
 
-        // LOGIKA UPLOAD FONT
         fontUpload.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
@@ -179,9 +178,8 @@
                         option.selected = true;
                         fontFamily.add(option);
                         fontUploadLabel.innerText = "Font Berhasil Dimuat!";
-                        fontUploadLabel.classList.add('text-blue-600');
                         draw();
-                    }).catch(err => alert("Font rusak atau tidak didukung."));
+                    }).catch(err => alert("Gagal memuat font."));
                 };
                 reader.readAsArrayBuffer(file);
             }
@@ -211,7 +209,7 @@
 
         async function draw() {
             const text = textInput.value || " ";
-            const fSize = parseInt(fontSize.value);
+            const fSize = parseFloat(fontSize.value);
             const sWidth = parseFloat(strokeWidth.value);
             
             valFontSize.value = fontSize.value;
@@ -254,7 +252,6 @@
             [textInput, fontFamily, fontSize, strokeWidth, outlineEnable, outlineColor, singleColorMode].forEach(el => {
                 el.addEventListener('input', draw);
             });
-            // Input manual angka sinkron ke slider
             [valFontSize, valStrokeWidth].forEach(el => {
                 el.addEventListener('input', (e) => {
                     const targetId = e.target.id === 'valFontSize' ? 'fontSize' : 'strokeWidth';

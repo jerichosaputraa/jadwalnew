@@ -96,11 +96,11 @@
                 <div>
                     <label class='block text-[10px] font-black text-gray-400 mb-2 uppercase tracking-wider'>Profil Warna</label>
                     <select class='w-full p-2.5 border-2 border-gray-100 rounded-xl text-xs font-bold mb-3' id='colorProfile'>
-                        <option selected value='playful'>Playful Bright</option>
-                        <option value='vintage'>Vintage Soft</option>
-                        <option value='pastel'>Sweet Pastel</option>
-                        <option value='neon'>Electric Neon</option>
-                        <option value='earth'>Earth Tones</option>
+                        <option selected value='playful'>Playful</option>
+                        <option value='bold'>Bold</option>
+                        <option value='hitam'>Hitam</option>
+                        <option value='biru'>Biru</option>
+                        <option value='putih'>Putih</option>
                     </select>
                     <div class='grid grid-cols-5 gap-2' id='colorPalette'></div>
                 </div>
@@ -147,11 +147,11 @@
         const singleColorMode = document.getElementById('singleColorMode');
 
         const profiles = {
-            playful: ['#FF595E', '#FFCA3A', '#8AC926', '#1982C4', '#6A4C93'],
-            vintage: ['#84a5ba', '#d87459', '#e9c465', '#f8c5af', '#a7c1ae'],
-            pastel: ['#FFB7B2', '#FFDAC1', '#E2F0CB', '#B5EAD7', '#C7CEEA'],
-            neon: ['#39FF14', '#FF00FF', '#00FFFF', '#FFFF00', '#FF3131'],
-            earth: ['#6B705C', '#A5A58D', '#B7B7A4', '#FFE8D6', '#DDBEA9']
+            playful: ['#ED2224', '#3DB54A', '#F79421', '#2BAAE2'],
+            bold: ['#749BB5', '#DF775B', '#EDBA65', '#FCCDBA', '#B7CCBB', '#E1863B'],
+            hitam: ['#000000'],
+            biru: ['#00509E'],
+            putih: ['#FFFFFF']
         };
 
         let currentSelectedColors = [];

@@ -16,10 +16,9 @@
         .canvas-area { 
             background-image: linear-gradient(45deg, #e5e7eb 25%, transparent 25%), linear-gradient(-45deg, #e5e7eb 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #e5e7eb 75%), linear-gradient(-45deg, transparent 75%, #e5e7eb 75%);
             background-size: 20px 20px;
-            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
             border-radius: 24px;
         }
-        .custom-file-upload { cursor: pointer; transition: all 0.2s; border: 2px dashed #d1d5db; border-radius: 12px; }
+        .custom-file-upload { cursor: pointer; transition: all 0.2s; border: 2px dashed #d1d5db; border-radius: 12px; background: #fff; }
         .custom-file-upload:hover { border-color: #3b82f6; background: #eff6ff; }
         .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
         .switch input { opacity: 0; width: 0; height: 0; }
@@ -37,7 +36,7 @@
             <h2 class="text-3xl md:text-4xl font-black text-gray-800 flex items-center justify-center gap-2">
                 <i data-lucide="sticker" class="text-yellow-500 w-8 h-8"></i> Sticker Text Pro
             </h2>
-            <p class="text-gray-500 mt-1 text-[10px] md:text-xs font-bold uppercase tracking-[0.2em]">Custom Font & Multi-Color Ready</p>
+            <p class="text-gray-500 mt-1 text-[10px] md:text-xs font-bold uppercase tracking-[0.2em]">Custom Font & Multi-Color System</p>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -58,10 +57,14 @@
                             <option value="Bungee">Bungee</option>
                         </select>
                     </div>
-                    <label class="custom-file-upload flex flex-col items-center justify-center p-3 gap-1">
+                    
+                    <label for="fontUpload" class="custom-file-upload flex flex-col items-center justify-center p-4 gap-2 border-2">
                         <input type="file" id="fontUpload" accept=".ttf,.otf" class="hidden">
-                        <i data-lucide="file-up" class="text-blue-500 w-5 h-5"></i>
-                        <span id="fontUploadLabel" class="text-[9px] font-black text-gray-500 uppercase">Upload Font Kustom</span>
+                        <i data-lucide="file-up" class="text-blue-500 w-6 h-6"></i>
+                        <div class="text-center">
+                            <span id="fontUploadLabel" class="text-[10px] font-black text-gray-500 uppercase block">Klik untuk Upload Font</span>
+                            <span class="text-[8px] text-gray-400 italic">(.ttf atau .otf)</span>
+                        </div>
                     </label>
                 </div>
 
@@ -98,7 +101,6 @@
                         <option value="pastel">Sweet Pastel</option>
                         <option value="neon">Electric Neon</option>
                         <option value="earth">Earth Tones</option>
-                        <option value="monochrome">Luxury Dark</option>
                     </select>
                     <div class="grid grid-cols-5 gap-2" id="colorPalette"></div>
                 </div>
@@ -149,8 +151,7 @@
             vintage: ['#84a5ba', '#d87459', '#e9c465', '#f8c5af', '#a7c1ae'],
             pastel: ['#FFB7B2', '#FFDAC1', '#E2F0CB', '#B5EAD7', '#C7CEEA'],
             neon: ['#39FF14', '#FF00FF', '#00FFFF', '#FFFF00', '#FF3131'],
-            earth: ['#6B705C', '#A5A58D', '#B7B7A4', '#FFE8D6', '#DDBEA9'],
-            monochrome: ['#2B2D42', '#8D99AE', '#EDF2F4', '#EF233C', '#D90429']
+            earth: ['#6B705C', '#A5A58D', '#B7B7A4', '#FFE8D6', '#DDBEA9']
         };
 
         let currentSelectedColors = [];
@@ -162,7 +163,7 @@
             document.fonts.ready.then(draw);
         }
 
-        // FUNGSI UPLOAD FONT
+        // LOGIKA UPLOAD FONT
         fontUpload.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
@@ -177,9 +178,10 @@
                         option.text = "Kustom: " + file.name;
                         option.selected = true;
                         fontFamily.add(option);
-                        fontUploadLabel.innerText = "Berhasil: " + file.name;
+                        fontUploadLabel.innerText = "Font Berhasil Dimuat!";
+                        fontUploadLabel.classList.add('text-blue-600');
                         draw();
-                    }).catch(err => alert("Gagal memuat font: " + err));
+                    }).catch(err => alert("Font rusak atau tidak didukung."));
                 };
                 reader.readAsArrayBuffer(file);
             }
@@ -218,9 +220,9 @@
             ctx.font = `900 ${fSize}px "${fontFamily.value}", sans-serif`;
             const textMetrics = ctx.measureText(text);
             
-            const padding = fSize * 0.6;
+            const padding = fSize * 0.7;
             canvas.width = textMetrics.width + padding;
-            canvas.height = fSize * 2;
+            canvas.height = fSize * 2.2;
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.textBaseline = 'middle';
@@ -251,6 +253,14 @@
         function setupEventListeners() {
             [textInput, fontFamily, fontSize, strokeWidth, outlineEnable, outlineColor, singleColorMode].forEach(el => {
                 el.addEventListener('input', draw);
+            });
+            // Input manual angka sinkron ke slider
+            [valFontSize, valStrokeWidth].forEach(el => {
+                el.addEventListener('input', (e) => {
+                    const targetId = e.target.id === 'valFontSize' ? 'fontSize' : 'strokeWidth';
+                    document.getElementById(targetId).value = e.target.value;
+                    draw();
+                });
             });
             colorProfile.addEventListener('change', (e) => loadPalette(e.target.value));
             document.getElementById('downloadBtn').addEventListener('click', () => {

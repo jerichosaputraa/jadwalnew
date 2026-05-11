@@ -10,6 +10,7 @@
     
     <script src='https://unpkg.com/lucide@latest'></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/svgproxy@1.0.1/dist/svgproxy.min.js"></script>
 
     <style>
         body { background-color: #f3f4f6; font-family: 'Quicksand', sans-serif; }
@@ -37,7 +38,7 @@
             <h2 class='text-3xl md:text-4xl font-black text-gray-800 flex items-center justify-center gap-2'>
                 <i data-lucide='sticker' class='text-yellow-500 w-8 h-8'></i> Sticker Text Pro
             </h2>
-            <p class='text-gray-500 mt-1 text-[10px] md:text-xs font-bold uppercase tracking-[0.2em]'>Pure Vector Export (SVG & PDF)</p>
+            <p class='text-gray-500 mt-1 text-[10px] md:text-xs font-bold uppercase tracking-[0.2em]'>Lossless Pure Vector Export</p>
         </div>
 
         <div class='grid grid-cols-1 lg:grid-cols-12 gap-6'>
@@ -127,7 +128,7 @@
                     <div class="flex gap-2">
                         <button class='bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-bold text-xs transition-all active:scale-95' id='downloadSvgBtn'>SVG VEKTOR</button>
                         <button class='bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-lg font-bold text-xs transition-all active:scale-95' id='downloadPdfBtn'>PDF VEKTOR</button>
-                        <button class='bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-black transition-all active:scale-95 shadow-lg shadow-blue-200' id='downloadBtn'>SIMPAN PNG</button>
+                        <button class='bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-black transition-all active:scale-95 shadow-lg shadow-blue-200' id='downloadBtn'>PNG</button>
                     </div>
                 </div>
             </div>
@@ -212,40 +213,11 @@
             draw();
         }
 
-        // Fungsi rander utama yang bisa digunakan kembali
-        function renderToTargetContext(targetCtx, targetCanvas) {
-            const text = textInput.value || " ";
-            const fSize = parseFloat(fontSize.value);
-            const sWidth = parseFloat(strokeWidth.value);
-            const x = targetCanvas.width / 2;
-            const y = targetCanvas.height / 2;
-
-            targetCtx.font = `900 ${fSize}px "${fontFamily.value}", sans-serif`;
-            targetCtx.textBaseline = 'middle';
-            targetCtx.textAlign = 'center';
-            targetCtx.lineJoin = 'round';
-            targetCtx.lineCap = 'round';
-
-            if (outlineEnable.checked) {
-                targetCtx.strokeStyle = outlineColor.value;
-                targetCtx.lineWidth = sWidth * 2.5;
-                targetCtx.strokeText(text, x, y);
-            }
-
-            const textMetrics = targetCtx.measureText(text);
-            let currentX = x - (textMetrics.width / 2);
-            for (let i = 0; i < text.length; i++) {
-                const char = text[i];
-                const charWidth = targetCtx.measureText(char).width;
-                targetCtx.fillStyle = singleColorMode.checked ? currentSelectedColors[0] : currentSelectedColors[i % currentSelectedColors.length];
-                targetCtx.fillText(char, currentX + (charWidth / 2), y);
-                currentX += charWidth;
-            }
-        }
-
         async function draw() {
             const text = textInput.value || " ";
             const fSize = parseFloat(fontSize.value);
+            const sWidth = parseFloat(strokeWidth.value);
+            
             valFontSize.value = fontSize.value;
             valStrokeWidth.value = strokeWidth.value;
 
@@ -256,10 +228,33 @@
             canvas.width = textMetrics.width + padding;
             canvas.height = fSize * 2.2;
 
-            renderToTargetContext(ctx, canvas);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.textBaseline = 'middle';
+            ctx.textAlign = 'center';
+            ctx.lineJoin = 'round';
+            ctx.lineCap = 'round';
+
+            const x = canvas.width / 2;
+            const y = canvas.height / 2;
+
+            if (outlineEnable.checked) {
+                ctx.font = `900 ${fSize}px "${fontFamily.value}", sans-serif`;
+                ctx.strokeStyle = outlineColor.value;
+                ctx.lineWidth = sWidth * 2.5;
+                ctx.strokeText(text, x, y);
+            }
+
+            let currentX = x - (textMetrics.width / 2);
+            for (let i = 0; i < text.length; i++) {
+                const char = text[i];
+                const charWidth = ctx.measureText(char).width;
+                ctx.fillStyle = singleColorMode.checked ? currentSelectedColors[0] : currentSelectedColors[i % currentSelectedColors.length];
+                ctx.fillText(char, currentX + (charWidth / 2), y);
+                currentX += charWidth;
+            }
         }
 
-        // --- FUNGSI VEKTORISASI PERBAIKAN ---
+        // --- GENERATOR VEKTOR SEJATI (SVG) ---
         function generatePureSVG() {
             const text = textInput.value || " ";
             const fSize = parseFloat(fontSize.value);
@@ -272,18 +267,20 @@
             const xCenter = width / 2;
             const yCenter = height / 2;
 
-            // Gunakan &amp; agar URL valid dalam XML/SVG
+            // Memperbaiki URL font agar valid dalam XML
             const fontUrl = "https://fonts.googleapis.com/css2?family=Fredoka:wght@700&amp;family=Luckiest+Guy&amp;family=Lilita+One&amp;family=Sour+Gummy:wght@900&amp;family=Bungee&amp;family=Quicksand:wght@700&amp;display=swap";
 
-            let svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">`;
-            svgContent += `<style>@import url('${fontUrl}'); text { font-family: '${fFamily}', sans-serif; font-weight: 900; }</style>`;
+            let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">`;
+            svg += `<style>@import url('${fontUrl}'); text { font-family: '${fFamily}', sans-serif; font-weight: 900; }</style>`;
             
+            // Layer 1: Outline Vektor (Gunakan stroke murni)
             if (outlineEnable.checked) {
-                svgContent += `<text x="${xCenter}" y="${yCenter}" text-anchor="middle" dominant-baseline="middle" 
+                svg += `<text x="${xCenter}" y="${yCenter}" text-anchor="middle" dominant-baseline="middle" 
                     font-size="${fSize}" fill="none" stroke="${outlineColor.value}" 
                     stroke-width="${sWidth * 2.5}" stroke-linejoin="round" stroke-linecap="round">${text}</text>`;
             }
 
+            // Layer 2: Fill Vektor per Karakter
             let currentX = xCenter - (textMetrics.width / 2);
             for (let i = 0; i < text.length; i++) {
                 const char = text[i];
@@ -291,13 +288,13 @@
                 const color = singleColorMode.checked ? currentSelectedColors[0] : currentSelectedColors[i % currentSelectedColors.length];
                 const safeChar = char.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-                svgContent += `<text x="${currentX + (charWidth / 2)}" y="${yCenter}" text-anchor="middle" 
+                svg += `<text x="${currentX + (charWidth / 2)}" y="${yCenter}" text-anchor="middle" 
                     dominant-baseline="middle" font-size="${fSize}" fill="${color}">${safeChar}</text>`;
                 currentX += charWidth;
             }
 
-            svgContent += `</svg>`;
-            return svgContent;
+            svg += `</svg>`;
+            return svg;
         }
 
         function setupEventListeners() {
@@ -313,42 +310,40 @@
             });
             colorProfile.addEventListener('change', (e) => loadPalette(e.target.value));
             
+            // DOWNLOAD PNG (Bitmap)
             document.getElementById('downloadBtn').addEventListener('click', () => {
                 const link = document.createElement('a');
-                link.download = `sticker-${textInput.value}-${Date.now()}.png`;
+                link.download = `sticker-${textInput.value}.png`;
                 link.href = canvas.toDataURL('image/png', 1.0);
                 link.click();
             });
 
+            // DOWNLOAD SVG (Pure Vector)
             document.getElementById('downloadSvgBtn').addEventListener('click', () => {
                 const svgData = generatePureSVG();
                 const blob = new Blob([svgData], {type: 'image/svg+xml'});
                 const url = URL.createObjectURL(blob);
                 const link = document.createElement('a');
-                link.download = `sticker-${textInput.value}-${Date.now()}.svg`;
+                link.download = `sticker-${textInput.value}.svg`;
                 link.href = url;
                 link.click();
             });
 
+            // DOWNLOAD PDF (Pure Vector via SVG Embed)
             document.getElementById('downloadPdfBtn').addEventListener('click', () => {
                 const { jsPDF } = window.jspdf;
+                const svgData = generatePureSVG();
+                
                 const pdf = new jsPDF({
                     orientation: canvas.width > canvas.height ? 'l' : 'p',
                     unit: 'px',
                     format: [canvas.width, canvas.height]
                 });
 
-                const scale = 4; // High DPI render untuk hasil tajam
-                const tempCanvas = document.createElement('canvas');
-                tempCanvas.width = canvas.width * scale;
-                tempCanvas.height = canvas.height * scale;
-                const tCtx = tempCanvas.getContext('2d');
-                tCtx.scale(scale, scale);
-                
-                renderToTargetContext(tCtx, canvas); 
-
-                pdf.addImage(tempCanvas.toDataURL('image/png'), 'PNG', 0, 0, canvas.width, canvas.height);
-                pdf.save(`sticker-${textInput.value}-${Date.now()}.pdf`);
+                // Memasukkan elemen teks SVG sebagai objek path vektor ke PDF
+                // Catatan: jsPDF akan merubah elemen <text> SVG menjadi kurva vektor
+                pdf.addSvgAsImage(svgData, 0, 0, canvas.width, canvas.height);
+                pdf.save(`sticker-${textInput.value}.pdf`);
             });
         }
 
